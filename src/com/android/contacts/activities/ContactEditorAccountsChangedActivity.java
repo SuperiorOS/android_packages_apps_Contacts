@@ -37,6 +37,7 @@ import com.android.contacts.model.account.AccountInfo;
 import com.android.contacts.model.account.AccountWithDataSet;
 import com.android.contacts.model.account.AccountsLoader;
 import com.android.contacts.util.AccountsListAdapter;
+import com.android.contacts.util.GmsUtils;
 import com.android.contacts.util.ImplicitIntentsUtil;
 
 import java.util.List;
@@ -123,6 +124,8 @@ public class ContactEditorAccountsChangedActivity extends Activity
             throw new IllegalStateException("Cannot have a negative number of accounts");
         }
 
+        boolean gmsAvailable = GmsUtils.isGmsAvailable(this);
+
         final View view;
         if (numAccounts >= 2) {
             // When the user has 2+ writable accounts, show a list of accounts so the user can pick
@@ -136,6 +139,8 @@ public class ContactEditorAccountsChangedActivity extends Activity
             final Button button = (Button) view.findViewById(R.id.add_account_button);
             button.setText(getString(R.string.add_new_account));
             button.setOnClickListener(mAddAccountClickListener);
+            if (!gmsAvailable)
+                button.setEnabled(false);
 
             final ListView accountListView = (ListView) view.findViewById(R.id.account_list);
             mAccountListAdapter = new AccountsListAdapter(this, accounts);
@@ -143,6 +148,11 @@ public class ContactEditorAccountsChangedActivity extends Activity
             accountListView.setOnItemClickListener(mAccountListItemClickListener);
         } else if (numAccounts == 1
                 && !accounts.get(0).getAccount().equals(AccountWithDataSet.getLocalAccount(this))) {
+            final AccountInfo accountInfo = accounts.get(0);
+
+            if (!gmsAvailable)
+                saveAccountAndReturnResult(accountInfo.getAccount());
+
             // If the user has 1 writable account we will just show the user a message with 2
             // possible action buttons.
             view = View.inflate(this,
@@ -152,7 +162,6 @@ public class ContactEditorAccountsChangedActivity extends Activity
             final Button leftButton = (Button) view.findViewById(R.id.left_button);
             final Button rightButton = (Button) view.findViewById(R.id.right_button);
 
-            final AccountInfo accountInfo = accounts.get(0);
             textView.setText(getString(R.string.contact_editor_prompt_one_account,
                     accountInfo.getNameLabel()));
 
@@ -171,6 +180,9 @@ public class ContactEditorAccountsChangedActivity extends Activity
                 }
             });
         } else {
+            if (!gmsAvailable)
+                saveAccountAndReturnResult(AccountWithDataSet.getNullAccount());
+
             // If the user has 0 writable accounts, we will just show the user a message with 2
             // possible action buttons.
             view = View.inflate(this,
