@@ -36,6 +36,7 @@ import android.widget.TextView;
 import com.android.contacts.R;
 import com.android.contacts.compat.ProviderStatusCompat;
 import com.android.contacts.interactions.ImportDialogFragment;
+import com.android.contacts.util.GmsUtils;
 import com.android.contacts.util.ImplicitIntentsUtil;
 
 /**
@@ -90,6 +91,9 @@ public class ContactsUnavailableFragment extends Fragment implements OnClickList
         if (mProviderStatus != null) {
             updateStatus(mProviderStatus);
         }
+
+        if (!GmsUtils.isGmsAvailable(getContext()))
+            mAddAccountButton.setVisibility(View.GONE);
 
         return mView;
     }
